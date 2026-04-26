@@ -19,6 +19,7 @@ import lxml.etree as etree
 from docx import Document
 from docx.oxml.ns import qn
 from docx.oxml import OxmlElement
+import io
 
 # =================== CẤU HÌNH GIÁ ===================
 GIA = {
@@ -65,7 +66,11 @@ def load_data(xlsx_path: str) -> list:
             "duyet_de":  _int(row[7]),
         })
     teachers.sort(key=lambda x: x['ma'])
-    return teachers
+    return {
+        "teachers": teachers,
+        "nam_hoc" : ws["D1"].value,
+        "hoc_ky" : ws["F1"].value
+    }
 
 
 # =================== HELPERS ===================
@@ -142,8 +147,8 @@ def set_cols(tr, col_texts: dict, bold: bool = False):
             set_tc_text(tcs[idx], text, bold)
 
 # =================== SINH REPORT ===================
-def generate_report(xlsx_path: str, template_path: str, output_path: str):
-    teachers = load_data(xlsx_path)
+def generate_report(xlsx_path: str, template_path: str):
+    imported_data = load_data(xlsx_path)
 
     doc = Document(template_path)
     dt  = doc.tables[0].rows[0].cells[0].tables[1]
@@ -166,7 +171,7 @@ def generate_report(xlsx_path: str, template_path: str, output_path: str):
     grand_total = 0
     grand_tax = 0
 
-    for t in teachers:
+    for t in imported_data["teachers"]:
         acts = compute_acts(t)
         if not acts:
             continue
@@ -219,12 +224,17 @@ def generate_report(xlsx_path: str, template_path: str, output_path: str):
         3: fmt_money(grand_total - grand_tax),
     }, bold=True)
     tbl.append(tr_g)
-
+    output_path = f"FIT_TTHDK_HK{imported_data["hoc_ky"]}_{imported_data["nam_hoc"].replace(" ", "")}.docx"
     doc.save(output_path)
+
+    # ===== SAVE TO MEMORY =====
+    buffer = io.BytesIO()
+    doc.save(buffer)
+    buffer.seek(0)
+    return buffer
 
 if __name__ == "__main__":
     generate_report(
         xlsx_path="Data.xlsx",
-        template_path="Template.docx",
-        output_path="FIT_TTHDK_HK1_2025_2026.docx",
+        template_path="Template.docx"
     )

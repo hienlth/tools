@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}Trang chủ{% endblock %}
+
+{% block content %}
+<h3 class="text-center mb-4">Chọn chức năng</h3>
+
+<div class="row g-4">
+
+    <div class="col-md-4">
+        <div class="card shadow h-100 text-center p-3">
+            <h5>📄 Report: Ra đề, duyệt đề, chấm thi</h5>
+            <p>Upload và xử lý thống kê theo mẫu <a href="/static/samples/Data_RaDeDuyetDeChamThi.xlsx">.xlsx</a> đính kèm</p>
+            <a href="/report/ra-de-duyet-de-cham-thi" class="btn btn-primary">Thực hiện</a>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card shadow h-100 text-center p-3">
+            <h5>📑 Sinh Report: Khóa luận Tốt nghiệp</h5>
+            <p>Tạo báo cáo tự động</p>
+            <a href="/upload" class="btn btn-success">Thực hiện</a>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card shadow h-100 text-center p-3">
+            <h5>📑 Sinh Report: Hồ sơ Tốt nghiệp</h5>
+            <p>Tạo báo cáo tự động</p>
+            <a href="/upload" class="btn btn-info">Thực hiện</a>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

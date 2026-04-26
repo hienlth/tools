@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %}Ra đề, duyệt đề, chấm thi,...{% endblock %}
+
+{% block content %}
+<h3 class="text-center mb-4">Ra đề, duyệt đề, chấm thi,...</h3>
+
+<div class="row g-4">
+
+    <div class="card shadow">
+        <div class="card-body text-center">
+            <h4 class="mb-4">📄 Tạo report hoạt động khác</h4>
+
+            <form id="uploadForm">
+                <input type="file" name="file" class="form-control mb-3" required>
+
+                <button class="btn btn-primary w-100">Upload & Process</button>
+            </form>
+
+            <div id="loading" class="text-center mt-3 d-none">
+                <div class="spinner-border text-primary"></div>
+                <p>Processing...</p>
+            </div>
+
+            <div id="error" class="text-danger mt-3"></div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

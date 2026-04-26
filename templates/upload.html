@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block title %}Upload{% endblock %}
+
+{% block content %}
+
+<div class="card shadow p-4">
+    <h4 class="mb-3 text-center">Upload file Word</h4>
+
+    <form id="uploadForm">
+        <input type="file" name="file" class="form-control mb-3" required>
+
+        <button class="btn btn-primary w-100">Upload & Process</button>
+    </form>
+
+    <div id="loading" class="text-center mt-3 d-none">
+        <div class="spinner-border text-primary"></div>
+        <p>Processing...</p>
+    </div>
+</div>
+
+{% endblock %}

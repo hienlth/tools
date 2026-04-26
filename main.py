@@ -1,36 +1,50 @@
-from typing import Optional
-from fastapi import FastAPI
-from fastapi import UploadFile
-from fastapi.responses import FileResponse
+from fastapi import FastAPI, UploadFile, Request, File
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import HTMLResponse, StreamingResponse
+from fastapi.templating import Jinja2Templates
 import shutil
 import os
 from services import generate_report
 
 app = FastAPI()
 
+app.mount("/static", StaticFiles(directory="static"), name="static")
+templates = Jinja2Templates(directory="templates")
 
-@app.get("/")
-async def root():
-    return {"message": "FIT-HCMUE"}
+@app.get("/", response_class=HTMLResponse)
+def home(request: Request):
+    return templates.TemplateResponse(
+        request=request,
+        name="index.html",
+        context={}
+    )
+
+
+@app.get("/report/ra-de-duyet-de-cham-thi", response_class=HTMLResponse)
+def home(request: Request):
+    return templates.TemplateResponse(
+        request=request,
+        name="rade_chamthi.html",
+        context={}
+    )
+
 
 @app.post("/hoat-dong-khac")
-def upload_file(file: UploadFile):
+def upload_file(file: UploadFile = File(...)):
     my_filename = os.path.join(os.getcwd(), "data", file.filename)
     with open(my_filename, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
     
-    print(my_filename)
     template_path=os.path.join(os.getcwd(), "templates", "Template.docx")
-    print(template_path)
-    file_export_name="FIT_TTHDK_HK1_2025_2026.docx"
-    export_path=os.path.join(os.getcwd(), "outputs", file_export_name)
-    generate_report.generate_report(
+    data_output = generate_report.generate_report(
         xlsx_path=my_filename,
-        template_path=template_path,
-        output_path=export_path,
+        template_path=template_path
     )
-    return FileResponse(
-        path=export_path,
-        filename=file_export_name,
-        media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+
+    return StreamingResponse(
+        data_output,
+        media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        headers={
+            "Content-Disposition": "attachment; filename=processed_report.docx"
+        }
     )
