@@ -18,7 +18,7 @@ Cấu trúc header Data.xlsx:
 
 """
 
-import copy, io
+import copy, os
 import openpyxl
 import lxml.etree as etree
 from docx import Document
@@ -296,18 +296,17 @@ def generate_report(xlsx_path: str, template_path: str) -> str:
     # Cập nhật tiêu đề học kỳ / năm học
     update_header(doc, hoc_ky, nam_hoc)
 
-    nam_hoc_clean = str(nam_hoc).replace(" ", "").replace("-", "_")
+    nam_hoc_clean = str(nam_hoc).replace(" ", "")
     output_path   = f"FIT_TTHDK_HK{hoc_ky}_{nam_hoc_clean}.docx"
     doc.save(output_path)
-
-    # ===== SAVE TO MEMORY =====
-    buffer = io.BytesIO()
-    doc.save(buffer)
-    buffer.seek(0)
-    return buffer
+    print(f"✅ Đã lưu: {output_path}")
+    print(f"   Tổng tiền : {fmt_money(grand_total)}")
+    print(f"   Trừ thuế  : {fmt_money(grand_tax)}")
+    print(f"   Thực lĩnh : {fmt_money(grand_total - grand_tax)}")
+    return output_path
 
 if __name__ == "__main__":
     generate_report(
-        xlsx_path="Data.xlsx",
-        template_path="Template.docx"
+        xlsx_path     = r"C:\Users\ADMIN\Downloads\Data_RaDeDuyetDeChamThi.xlsx",
+        template_path = r"F:\hienlth.io.vn\FIT_Tools\tools\templates\Template.docx",
     )
