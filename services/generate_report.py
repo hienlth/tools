@@ -33,6 +33,10 @@ GIA = {
     "tieu_luan": 3000,
     "ra_de":     90000,
     "duyet_de":  30000,
+    "huong_dan_khoa_luan": 800000,
+    "chu_tich_khoa_luan": 150000,
+    "phan_bien_khoa_luan": 200000,
+    "thu_ky_khoa_luan": 120000,
 }
 
 ACT_NAME = {
@@ -41,22 +45,70 @@ ACT_NAME = {
     "tu_luan":   "Chấm bài thi hết HP tự luận bậc ĐH KHTN",
     "thuc_hanh": "Chấm bài thi thực hành bậc ĐH KHTN",
     "tieu_luan": "Chấm tiểu luận hết học phần bậc DH",
+    "huong_dan_khoa_luan": "H.Dẫn khóa luận tốt nghiệp bậc ĐH",
+    "chu_tich_khoa_luan": "Chủ tịch HĐ chấm khóa luận bậc ĐH",
+    "phan_bien_khoa_luan": "Đọc và phản biện khóa luận bậc ĐH",
+    "thu_ky_khoa_luan": "Thư ký HĐ chấm khóa luận bậc ĐH",
 }
 
 ACT_UNIT = {
     "ra_de": "đề+ĐA", "duyet_de": "đề",
     "tu_luan": "bài", "thuc_hanh": "bài", "tieu_luan": "bài",
+    "huong_dan_khoa_luan": "khóa luận",
+    "chu_tich_khoa_luan": "hội đồng",
+    "phan_bien_khoa_luan": "hội đồng",
+    "thu_ky_khoa_luan": "hội đồng",
+}
+
+ACT_ORDER = [
+    "ra_de", "duyet_de", "tu_luan", "thuc_hanh", "tieu_luan",
+    "huong_dan_khoa_luan", "chu_tich_khoa_luan",
+    "phan_bien_khoa_luan", "thu_ky_khoa_luan",
+]
+
+# ===== MAP CHỨC DANH CHỮ KÝ =====
+FOOTER_LABEL = {
+    "rade_chamthi": "TRƯỞNG PHÒNG KHẢO THÍ & ĐBCL",
+    "khoa_luan": "TRƯỞNG PHÒNG KẾ HOẠCH TÀI CHÍNH",
 }
 
 # Column widths (dxa) — đo từ template gốc
 COL_WIDTHS = [540, 604, 2293, 1143, 1141, 1334, 1150, 1334]
 # Alignment cho từng cột data (8 cột)
 COL_ALIGN  = ["center", "center", "left", "center", "right", "right", "right", "right"]
-
 FONT_NAME  = "Times New Roman"
 
 
 # =================== ĐỌC DỮ LIỆU ===================
+def load_data_khoa_luan(xlsx_path: str) -> dict:
+    wb = openpyxl.load_workbook(xlsx_path)
+    ws = wb.active
+
+    def _int(v): return int(v) if v else 0
+
+    nam_hoc = ws["D1"].value or "2025 - 2026"
+    hoc_ky  = str(ws["F1"].value or "2")
+
+    teachers = []
+    for row in ws.iter_rows(min_row=3, values_only=True):
+        if row[0] is None:
+            break
+        teachers.append({
+            "ma":                   str(row[0]).zfill(4),
+            "ten":                  row[1],
+            "co_thue":              str(row[2]).strip().upper() == "X" if row[2] else False,
+            "huong_dan_khoa_luan":  _int(row[3]),
+            "chu_tich_khoa_luan":   _int(row[4]),
+            "phan_bien_khoa_luan":  _int(row[5]),
+            "thu_ky_khoa_luan":     _int(row[6]),
+            "tu_luan":   0, "thuc_hanh": 0, "tieu_luan": 0,
+            "ra_de":     0, "duyet_de":  0,
+        })
+
+    teachers.sort(key=lambda x: x["ma"])
+    return {"teachers": teachers, "nam_hoc": nam_hoc, "hoc_ky": hoc_ky}
+
+
 def load_data(xlsx_path: str) -> dict:
     wb = openpyxl.load_workbook(xlsx_path)
     ws = wb.active
@@ -91,15 +143,20 @@ def fmt_money(v: int) -> str:
 
 def compute_acts(t: dict) -> list:
     rows = []
-    for key in ["ra_de", "duyet_de", "tu_luan", "thuc_hanh", "tieu_luan"]:
-        qty = t[key]
+    for key in ACT_ORDER:
+        qty = t.get(key, 0)
         if qty == 0:
             continue
         tien = qty * GIA[key]
         vat  = round(tien * 0.1) if t["co_thue"] else 0
         rows.append({
-            "act": ACT_NAME[key], "qty": qty, "unit": ACT_UNIT[key],
-            "gia": GIA[key], "tien": tien, "vat": vat, "thanh_tien": tien - vat,
+            "act":       ACT_NAME[key],
+            "qty":       qty,
+            "unit":      ACT_UNIT[key],
+            "gia":       GIA[key],
+            "tien":      tien,
+            "vat":       vat,
+            "thanh_tien": tien - vat,
         })
     return rows
 
@@ -213,50 +270,50 @@ def row_grand(total, tax, net):
         {"text": fmt_money(net),   "align": "right",  "bold": True},
     )
 
+def _replace_runs(p, new_text: str):
+    """Xóa toàn bộ runs cũ, tạo lại 1 run duy nhất (giữ rPr gốc)."""
+    first_r = p.find(qn("w:r"))
+    old_rPr = None
+    if first_r is not None:
+        rp = first_r.find(qn("w:rPr"))
+        if rp is not None: old_rPr = copy.deepcopy(rp)
+    for r in p.findall(qn("w:r")): p.remove(r)
+    new_r = OxmlElement("w:r")
+    if old_rPr is None: old_rPr = OxmlElement("w:rPr")
+    new_r.append(old_rPr)
+    t_el = OxmlElement("w:t"); t_el.text = new_text
+    t_el.set("{http://www.w3.org/XML/1998/namespace}space", "preserve")
+    new_r.append(t_el); p.append(new_r)
 
 # =================== CẬP NHẬT TIÊU ĐỀ ===================
 def update_header(doc, hoc_ky: str, nam_hoc: str):
-    """
-    Tìm đoạn văn chứa 'Hệ chính qui' trong header table,
-    xóa toàn bộ runs cũ (có thể bị split nhiều runs),
-    tạo lại 1 run duy nhất với nội dung mới.
-    """
-    header_table = doc.tables[0].rows[0].cells[0].tables[0]
+    """Cập nhật dòng 'Hệ chính qui Học kỳ X, Năm học ...' trong header."""
+    ht = doc.tables[0].rows[0].cells[0].tables[0]
     new_text = f"Hệ chính qui Học kỳ {hoc_ky}, Năm học {nam_hoc}"
-
-    for row in header_table.rows:
+    for row in ht.rows:
         for cell in row.cells:
             for para in cell.paragraphs:
                 if "Hệ chính qui" in para.text:
-                    p = para._p
-                    # Lấy rPr từ run đầu để giữ định dạng (bold, size...)
-                    first_run = p.find(qn("w:r"))
-                    old_rPr = None
-                    if first_run is not None:
-                        rp = first_run.find(qn("w:rPr"))
-                        if rp is not None:
-                            old_rPr = copy.deepcopy(rp)
+                    _replace_runs(para._p, new_text)
+                    return
 
-                    # Xóa toàn bộ runs cũ
-                    for r in p.findall(qn("w:r")):
-                        p.remove(r)
 
-                    # Tạo 1 run mới duy nhất
-                    new_r = OxmlElement("w:r")
-                    if old_rPr is None:
-                        old_rPr = OxmlElement("w:rPr")
-                    new_r.append(old_rPr)
-                    t_el = OxmlElement("w:t")
-                    t_el.text = new_text
-                    t_el.set("{http://www.w3.org/XML/1998/namespace}space", "preserve")
-                    new_r.append(t_el)
-                    p.append(new_r)
-                    return  # chỉ cần cập nhật đoạn đầu tiên tìm thấy
+def update_footer(doc, report_type: str):
+    """Cập nhật chức danh chữ ký (col0, row1) trong footer table."""
+    label = FOOTER_LABEL.get(report_type, FOOTER_LABEL["rade_chamthi"])
+    footer_table = doc.tables[0].rows[1].cells[0].tables[0]
+    tc = footer_table.rows[1]._tr.findall(qn("w:tc"))[0]
+    _replace_runs(tc.find(qn("w:p")), label)
 
 
 # =================== GENERATE ===================
-def generate_report(xlsx_path: str, template_path: str) -> str:
-    data     = load_data(xlsx_path)
+def generate_report(xlsx_path: str, template_path: str, report_type: str="rade_chamthi") -> str:
+    if report_type == "rade_chamthi":
+        data = load_data(xlsx_path)
+    elif report_type == "khoa_luan":
+        data = load_data_khoa_luan(xlsx_path)
+    import json
+    print(json.dumps(data, indent=3))
     teachers = data["teachers"]
     nam_hoc  = data["nam_hoc"]
     hoc_ky   = data["hoc_ky"]
@@ -295,9 +352,10 @@ def generate_report(xlsx_path: str, template_path: str) -> str:
 
     # Cập nhật tiêu đề học kỳ / năm học
     update_header(doc, hoc_ky, nam_hoc)
+    update_footer(doc, report_type)
 
     nam_hoc_clean = str(nam_hoc).replace(" ", "").replace("-", "_")
-    output_path   = f"FIT_TTHDK_HK{hoc_ky}_{nam_hoc_clean}.docx"
+    output_path   = f"FIT_TTHDK_{report_type}_HK{hoc_ky}_{nam_hoc_clean}.docx"
     doc.save(output_path)
 
     # ===== SAVE TO MEMORY =====

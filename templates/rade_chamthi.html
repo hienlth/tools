@@ -9,12 +9,13 @@
 
     <div class="card shadow">
         <div class="card-body text-center">
-            <h4 class="mb-4">📄 Tạo report hoạt động khác</h4>
-
+            <h4 class="mb-4">📄 Tạo report hoạt động: Ra đề, chấm thi,...</h4>
+            <p>Điền thông tin số liệu theo <a href="/static/samples/Data_RaDeDuyetDeChamThi.xlsx">mẫu</a> đính kèm và upload lên hệ thống để sinh report</p>
             <form id="uploadForm">
                 <input type="file" name="file" class="form-control mb-3" required>
 
                 <button class="btn btn-primary w-100">Upload & Process</button>
+                <input type="hidden" name="report_type" id="report_type" value="rade_chamthi" />
             </form>
 
             <div id="loading" class="text-center mt-3 d-none">

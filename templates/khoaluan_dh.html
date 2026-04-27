@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}Thanh toán Khóa luận Tốt nghiệp{% endblock %}
+
+{% block content %}
+<h3 class="text-center mb-4">Thanh toán Khóa luận Tốt nghiệp</h3>
+
+<div class="row g-4">
+
+    <div class="card shadow">
+        <div class="card-body text-center">
+            <h4 class="mb-4">📄 Tạo report hoạt động: Khóa luận Tốt nghiệp ĐH</h4>            
+            <p>Điền thông tin số liệu theo <a href="/static/samples/Data_KhoaLuanTotNghiep.xlsx">mẫu</a> đính kèm và upload lên hệ thống để sinh report</p>
+            <form id="uploadForm">
+                <input type="file" name="file" class="form-control mb-3" required>
+
+                <button class="btn btn-primary w-100">Upload & Process</button>
+                <input type="hidden" name="report_type" id="report_type" value="khoa_luan" />
+            </form>
+
+            <div id="loading" class="text-center mt-3 d-none">
+                <div class="spinner-border text-primary"></div>
+                <p>Processing...</p>
+            </div>
+
+            <div class="text-center">
+                Vui lòng in file export, kèm quyết định hội đồng có mộc đỏ gửi trực tiếp <b>Phòng Kế hoạch Tài chính</b>, có ghi sổ điện tử theo dõi quá trình phòng KHTC xử lý.
+            </div>
+
+            <div id="error" class="text-danger mt-3"></div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
