@@ -38,6 +38,15 @@ def home(request: Request):
     )
 
 
+@app.get("/report/san-pham-nghien-cuu", response_class=HTMLResponse)
+def home(request: Request):
+    return templates.TemplateResponse(
+        request=request,
+        name="hstn_spnc.html",
+        context={}
+    )
+
+
 @app.post("/hoat-dong-khac")
 def upload_file(
     report_type: str = Form(default="rade_chamthi"),

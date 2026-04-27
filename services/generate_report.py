@@ -33,10 +33,15 @@ GIA = {
     "tieu_luan": 3000,
     "ra_de":     90000,
     "duyet_de":  30000,
-    "huong_dan_khoa_luan": 800000,
+    "huong_dan_khoa_luan": 800000, # không quá 5
     "chu_tich_khoa_luan": 150000,
     "phan_bien_khoa_luan": 200000,
     "thu_ky_khoa_luan": 120000,
+    "huong_dan_ho_so_tn": 1000000,
+    "cham_ho_so_tn": 25000,
+    "cham_tieu_luan_nckh": 100000,
+    "huong_dan_tieu_luan_nckh": 400000, # không quá 10
+    "cham_nckh_tich_luy": 100000,
 }
 
 ACT_NAME = {
@@ -49,6 +54,11 @@ ACT_NAME = {
     "chu_tich_khoa_luan": "Chủ tịch HĐ chấm khóa luận bậc ĐH",
     "phan_bien_khoa_luan": "Đọc và phản biện khóa luận bậc ĐH",
     "thu_ky_khoa_luan": "Thư ký HĐ chấm khóa luận bậc ĐH",
+    "huong_dan_ho_so_tn": "Hướng dẫn hồ sơ tốt nghiệp bậc ĐH",
+    "cham_ho_so_tn": "Chấm hồ sơ tốt nghiệp bậc ĐH",
+    "cham_tieu_luan_nckh": "Chấm tiểu luận nghiên cứu khoa học",
+    "huong_dan_tieu_luan_nckh": "Hướng dẫn tiểu luận nghiên cứu khoa học",
+    "cham_nckh_tich_luy": "Chấm sản phẩm nghiên cứu khoa học",
 }
 
 ACT_UNIT = {
@@ -58,12 +68,22 @@ ACT_UNIT = {
     "chu_tich_khoa_luan": "hội đồng",
     "phan_bien_khoa_luan": "hội đồng",
     "thu_ky_khoa_luan": "hội đồng",
+    "huong_dan_ho_so_tn": "lớp",
+    "cham_ho_so_tn": "hồ sơ",
+    "cham_tieu_luan_nckh": "công trình",
+    "huong_dan_tieu_luan_nckh": "công trình",
+    "cham_nckh_tich_luy": "sản phẩm",
 }
 
 ACT_ORDER = [
     "ra_de", "duyet_de", "tu_luan", "thuc_hanh", "tieu_luan",
     "huong_dan_khoa_luan", "chu_tich_khoa_luan",
     "phan_bien_khoa_luan", "thu_ky_khoa_luan",
+    "huong_dan_ho_so_tn",
+    "cham_ho_so_tn",
+    "cham_tieu_luan_nckh",
+    "huong_dan_tieu_luan_nckh",
+    "cham_nckh_tich_luy",
 ]
 
 # ===== MAP CHỨC DANH CHỮ KÝ =====
@@ -97,12 +117,38 @@ def load_data_khoa_luan(xlsx_path: str) -> dict:
             "ma":                   str(row[0]).zfill(4),
             "ten":                  row[1],
             "co_thue":              str(row[2]).strip().upper() == "X" if row[2] else False,
+            "huong_dan_ho_so_tn": _int(row[3]),
+            "cham_ho_so_tn":   _int(row[4]),
+            "cham_tieu_luan_nckh": _int(row[7]),
+            "huong_dan_tieu_luan_nckh": _int(row[6]),
+            "cham_nckh_tich_luy": _int(row[5])
+        })
+
+    teachers.sort(key=lambda x: x["ma"])
+    return {"teachers": teachers, "nam_hoc": nam_hoc, "hoc_ky": hoc_ky}
+
+
+def load_data_ho_so_tn_spnc(xlsx_path: str) -> dict:
+    wb = openpyxl.load_workbook(xlsx_path)
+    ws = wb.active
+
+    def _int(v): return int(v) if v else 0
+
+    nam_hoc = ws["D1"].value or "2025 - 2026"
+    hoc_ky  = str(ws["F1"].value or "2")
+
+    teachers = []
+    for row in ws.iter_rows(min_row=3, values_only=True):
+        if row[0] is None:
+            break
+        teachers.append({
+            "ma":                   str(row[0]).zfill(4),
+            "ten":                  row[1],
+            "co_thue":              str(row[2]).strip().upper() == "X" if row[2] else False,
             "huong_dan_khoa_luan":  _int(row[3]),
             "chu_tich_khoa_luan":   _int(row[4]),
             "phan_bien_khoa_luan":  _int(row[5]),
-            "thu_ky_khoa_luan":     _int(row[6]),
-            "tu_luan":   0, "thuc_hanh": 0, "tieu_luan": 0,
-            "ra_de":     0, "duyet_de":  0,
+            "thu_ky_khoa_luan":     _int(row[6])
         })
 
     teachers.sort(key=lambda x: x["ma"])
@@ -312,6 +358,8 @@ def generate_report(xlsx_path: str, template_path: str, report_type: str="rade_c
         data = load_data(xlsx_path)
     elif report_type == "khoa_luan":
         data = load_data_khoa_luan(xlsx_path)
+    elif report_type == "hstn_spnc":
+        data = load_data_ho_so_tn_spnc(xlsx_path)
     import json
     print(json.dumps(data, indent=3))
     teachers = data["teachers"]
