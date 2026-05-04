@@ -42,6 +42,9 @@ GIA = {
     "cham_tieu_luan_nckh": 100000,
     "huong_dan_tieu_luan_nckh": 400000, # không quá 10
     "cham_nckh_tich_luy": 100000,
+    "in_sao_de": 50,
+    "coi_thi_den_90_phut": 75000,
+    "coi_thi_tren_90_phut": 100000,
 }
 
 ACT_NAME = {
@@ -59,6 +62,9 @@ ACT_NAME = {
     "cham_tieu_luan_nckh": "Chấm tiểu luận nghiên cứu khoa học",
     "huong_dan_tieu_luan_nckh": "Hướng dẫn tiểu luận nghiên cứu khoa học",
     "cham_nckh_tich_luy": "Chấm sản phẩm nghiên cứu khoa học",
+    "in_sao_de": "In sao đề",
+    "coi_thi_den_90_phut": "Coi thi đến 90 phút bậc ĐH",
+    "coi_thi_tren_90_phut": "Coi thi trên 90 phút bậc ĐH",
 }
 
 ACT_UNIT = {
@@ -73,6 +79,9 @@ ACT_UNIT = {
     "cham_tieu_luan_nckh": "công trình",
     "huong_dan_tieu_luan_nckh": "công trình",
     "cham_nckh_tich_luy": "sản phẩm",
+    "in_sao_de": "trang A4",
+    "coi_thi_den_90_phut": "ca thi",
+    "coi_thi_tren_90_phut": "ca thi",
 }
 
 ACT_ORDER = [
@@ -84,6 +93,9 @@ ACT_ORDER = [
     "cham_tieu_luan_nckh",
     "huong_dan_tieu_luan_nckh",
     "cham_nckh_tich_luy",
+    "in_sao_de",
+    "coi_thi_den_90_phut",
+    "coi_thi_tren_90_phut"
 ]
 
 # ===== MAP CHỨC DANH CHỮ KÝ =====
@@ -177,6 +189,9 @@ def load_data(xlsx_path: str) -> dict:
             "tieu_luan": _int(row[5]),
             "ra_de":     _int(row[6]),
             "duyet_de":  _int(row[7]),
+            "in_sao_de":  _int(row[8]),
+            "coi_thi_den_90_phut":  _int(row[9]),
+            "coi_thi_tren_90_phut":  _int(row[10])
         })
 
     teachers.sort(key=lambda x: x["ma"])
