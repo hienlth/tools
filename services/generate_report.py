@@ -129,11 +129,10 @@ def load_data_khoa_luan(xlsx_path: str) -> dict:
             "ma":                   str(row[0]).zfill(4),
             "ten":                  row[1],
             "co_thue":              str(row[2]).strip().upper() == "X" if row[2] else False,
-            "huong_dan_ho_so_tn": _int(row[3]),
-            "cham_ho_so_tn":   _int(row[4]),
-            "cham_tieu_luan_nckh": _int(row[7]),
-            "huong_dan_tieu_luan_nckh": _int(row[6]),
-            "cham_nckh_tich_luy": _int(row[5])
+            "huong_dan_khoa_luan":  _int(row[3]),
+            "chu_tich_khoa_luan":   _int(row[4]),
+            "phan_bien_khoa_luan":  _int(row[5]),
+            "thu_ky_khoa_luan":     _int(row[6])
         })
 
     teachers.sort(key=lambda x: x["ma"])
@@ -156,11 +155,12 @@ def load_data_ho_so_tn_spnc(xlsx_path: str) -> dict:
         teachers.append({
             "ma":                   str(row[0]).zfill(4),
             "ten":                  row[1],
-            "co_thue":              str(row[2]).strip().upper() == "X" if row[2] else False,
-            "huong_dan_khoa_luan":  _int(row[3]),
-            "chu_tich_khoa_luan":   _int(row[4]),
-            "phan_bien_khoa_luan":  _int(row[5]),
-            "thu_ky_khoa_luan":     _int(row[6])
+            "co_thue":              str(row[2]).strip().upper() == "X" if row[2] else False,            
+            "huong_dan_ho_so_tn": _int(row[3]),
+            "cham_ho_so_tn":   _int(row[4]),
+            "cham_tieu_luan_nckh": _int(row[7]),
+            "huong_dan_tieu_luan_nckh": _int(row[6]),
+            "cham_nckh_tich_luy": _int(row[5])
         })
 
     teachers.sort(key=lambda x: x["ma"])
@@ -375,8 +375,8 @@ def generate_report(xlsx_path: str, template_path: str, report_type: str="rade_c
         data = load_data_khoa_luan(xlsx_path)
     elif report_type == "hstn_spnc":
         data = load_data_ho_so_tn_spnc(xlsx_path)
-    import json
-    print(json.dumps(data, indent=3))
+    # import json
+    # print(json.dumps(data, indent=3))
     teachers = data["teachers"]
     nam_hoc  = data["nam_hoc"]
     hoc_ky   = data["hoc_ky"]

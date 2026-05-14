@@ -52,7 +52,6 @@ def upload_file(
     report_type: str = Form(default="rade_chamthi"),
     file: UploadFile = File(...)
 ):
-    print('report type', report_type)
     my_filename = os.path.join(os.getcwd(), "data", file.filename)
     with open(my_filename, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
